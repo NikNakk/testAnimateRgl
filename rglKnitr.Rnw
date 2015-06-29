@@ -1,0 +1,28 @@
+\documentclass{article}
+\usepackage{animate}
+
+<< label = setup, include = FALSE>>=
+library("rgl")
+library("car")
+library("knitr")
+knit_hooks$set(rgl = hook_plot_custom)
+@ 
+\begin{document}
+
+<< label=rgl1, rgl=TRUE, fig.show='animate', fig.width=5, fig.height=5, out.width='.6\\linewidth', dev='png', fig.num = 40, interval=0.1>>=
+scatter3d(prestige ~ income + education, data=Duncan)
+M <- par3d("userMatrix")
+par3d(windowRect = 100 + opts_current$get("dpi") *
+        c(0, 0, opts_current$get("fig.width"), 
+        opts_current$get("fig.height")))
+spinFunc <- par3dinterp(userMatrix=list(M,
+                             rotate3d(M, pi/2, 1, 0, 0),
+                             rotate3d(M, pi/2, 0, 1, 0)))
+for(i in 1:40) {
+  par3d(spinFunc(i / 10))
+  Sys.sleep(0.05)
+  rgl.snapshot(fig_path(".png", number = i), fmt = "png")
+}
+@
+
+\end{document}
