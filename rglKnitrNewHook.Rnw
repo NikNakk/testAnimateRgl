@@ -1,0 +1,41 @@
+\documentclass{article}
+\usepackage{animate}
+
+<< label = setup, include = FALSE>>=
+  library("rgl")
+library("car")
+library("knitr")
+hook_rgl_spin <- function(before, options, envir) {
+  if (!before) {
+    par3d(windowRect = 100 + options$dpi *
+          c(0, 0, options$fig.width, 
+            options$fig.height))
+    if (!is.null(options$spin3d.axis)) {
+      spin3d.axis <- options$spin3d.axis
+    } else {
+      spin3d.axis <- c(0, 0, 1)
+    }
+    if (!is.null(options$spin3d.rpm)) {
+      spin3d.rpm <- options$spin3d.rpm
+    } else {
+      spin3d.rpm <- c(0, 0, 1)
+    }
+    spinFunc <- spin3d(axis = spin3d.axis, rpm = spin3d.rpm)
+    for(i in 1:options$fig.num) {
+      par3d(spinFunc(i * options$interval))
+      Sys.sleep(0.05)
+      rgl.snapshot(fig_path(".png", number = i), fmt = "png")
+    }
+    
+    hook_plot_custom(before, options, envir)
+  }
+}
+knit_hooks$set(rgl = hook_rgl_spin)
+@ 
+  \begin{document}
+
+<< label=rgl1, rgl=TRUE, fig.show='animate', fig.width=5, fig.height=5, out.width='.6\\linewidth', dev='png', fig.num = 40, interval=0.1, spin3d.axis=c(0, 0, 1), spin3d.rpm = 20>>=
+  scatter3d(prestige ~ income + education, data=Duncan)
+@
+  
+  \end{document}
